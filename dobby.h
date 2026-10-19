@@ -47,8 +47,8 @@ void double_buffer_inner_init(
   uint8_t *head_read,
   uint8_t *head_write
 );
-const void *double_buffer_inner_read(struct double_buffer_inner inner);
-void *double_buffer_inner_write(struct double_buffer_inner inner);
+const void *double_buffer_inner_read(const struct double_buffer_inner inner);
+void *double_buffer_inner_write(const struct double_buffer_inner inner);
 void double_buffer_inner_swap(struct double_buffer_inner *inner);
 
 struct double_buffer_config {
@@ -64,11 +64,11 @@ struct double_buffer {
 // owning api
 void double_buffer_init(
   struct double_buffer *dbuf,
-  struct double_buffer_config cfg
+  const struct double_buffer_config cfg
 );
-void double_buffer_free(struct double_buffer *dbuf);
-const void *double_buffer_read(struct double_buffer *dbuf);
-void *double_buffer_write(struct double_buffer *dbuf);
+void double_buffer_free(const struct double_buffer *dbuf);
+const void *double_buffer_read(const struct double_buffer *dbuf);
+void *double_buffer_write(const struct double_buffer *dbuf);
 void double_buffer_swap(struct double_buffer *dbuf);
 
 #ifdef __cplusplus
@@ -106,11 +106,11 @@ void double_buffer_inner_init(
   inner->head_write = head_write;
 }
 
-const void *double_buffer_inner_read(struct double_buffer_inner inner) {
+const void *double_buffer_inner_read(const struct double_buffer_inner inner) {
   return (const void *)inner.head_read;
 }
 
-void *double_buffer_inner_write(struct double_buffer_inner inner) {
+void *double_buffer_inner_write(const struct double_buffer_inner inner) {
   return (void *)inner.head_write;
 }
 
@@ -123,7 +123,7 @@ void double_buffer_inner_swap(struct double_buffer_inner *inner) {
 
 void double_buffer_init(
   struct double_buffer *dbuf,
-  struct double_buffer_config cfg
+  const struct double_buffer_config cfg
 ) {
   assert(dbuf);
   assert(cfg.elem_size > 0);
@@ -133,26 +133,26 @@ void double_buffer_init(
 
   // round element size to alignment
   assert(cfg.elem_size <= SIZE_MAX - (cfg.elem_align - 1));
-  size_t elem_stride =
+  const size_t elem_stride =
     (cfg.elem_size + cfg.elem_align - 1) & ~(cfg.elem_align - 1);
 
   // block size for one of the buffers (we need two of these)
   assert(elem_stride <= SIZE_MAX / cfg.elem_count);
-  size_t size = elem_stride * cfg.elem_count;
+  const size_t size = elem_stride * cfg.elem_count;
 
   // total size of both buffers
   assert(size <= SIZE_MAX / 2);
-  size_t total = 2 * size;
+  const size_t total = 2 * size;
 
   // round to allocation alignment
   // clang-format off
   // - guy keeps putting my ternaries on two lines...
-  size_t align = cfg.elem_align < _Alignof(max_align_t)
+  const size_t align = cfg.elem_align < _Alignof(max_align_t)
     ? _Alignof(max_align_t)
     : cfg.elem_align;
   // clang-format on
   assert(total <= SIZE_MAX - (align - 1));
-  size_t alloc_size = (total + align - 1) & ~(align - 1);
+  const size_t alloc_size = (total + align - 1) & ~(align - 1);
 
   // we use aligned alloc to avoid storing cfg
   uint8_t *memory = _DOBBY_ALIGNED_ALLOC(align, alloc_size);
@@ -161,7 +161,7 @@ void double_buffer_init(
   double_buffer_inner_init(&dbuf->inner, memory, memory + size);
 }
 
-void double_buffer_free(struct double_buffer *dbuf) {
+void double_buffer_free(const struct double_buffer *dbuf) {
   // lower pointer always starts as the allocation base
   // - we add a positive offset to the base to get the second buffer
   if (dbuf->inner.head_read < dbuf->inner.head_write) {
@@ -173,11 +173,11 @@ void double_buffer_free(struct double_buffer *dbuf) {
   }
 }
 
-const void *double_buffer_read(struct double_buffer *dbuf) {
+const void *double_buffer_read(const struct double_buffer *dbuf) {
   return double_buffer_inner_read(dbuf->inner);
 }
 
-void *double_buffer_write(struct double_buffer *dbuf) {
+void *double_buffer_write(const struct double_buffer *dbuf) {
   return double_buffer_inner_write(dbuf->inner);
 }
 
