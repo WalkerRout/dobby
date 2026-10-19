@@ -21,21 +21,20 @@
 /// @license:      GPL3
 ///
 
-#ifdef __cplusplus
-extern "C" {
-#endif // __cplusplus
-
 #ifndef _DOBBY_H
 #define _DOBBY_H
 
-#ifndef __STDC_VERSION__
-#error "use a modern compiler"
-#elif __STDC_VERSION__ < 201112L
-#error "dobby need c11"
+#if !defined(__cplusplus) \
+  && (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 201112L)
+#error "dobby needs C11"
 #endif
 
 #include <stddef.h>
 #include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
 
 struct double_buffer_inner {
   uint8_t *head_read;
@@ -72,6 +71,10 @@ const void *double_buffer_read(struct double_buffer *dbuf);
 void *double_buffer_write(struct double_buffer *dbuf);
 void double_buffer_swap(struct double_buffer *dbuf);
 
+#ifdef __cplusplus
+}
+#endif // __cplusplus
+
 #endif // _DOBBY_H
 
 #ifdef DOBBY_IMPLEMENTATION
@@ -88,6 +91,10 @@ void double_buffer_swap(struct double_buffer *dbuf);
 #define _DOBBY_ALIGNED_ALLOC(align, size) aligned_alloc((align), (size))
 #define _DOBBY_ALIGNED_FREE(ptr) free(ptr)
 #endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
 
 void double_buffer_inner_init(
   struct double_buffer_inner *inner,
@@ -178,8 +185,8 @@ void double_buffer_swap(struct double_buffer *dbuf) {
   double_buffer_inner_swap(&dbuf->inner);
 }
 
-#endif // DOBBY_IMPLEMENTATION
-
 #ifdef __cplusplus
 }
 #endif // __cplusplus
+
+#endif // DOBBY_IMPLEMENTATION
