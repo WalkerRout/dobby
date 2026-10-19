@@ -5,19 +5,19 @@
 ///   |    |  \  /   |   \|    |  _/|    |  _//   |   |
 ///   |    `   \/    |    \    |   \|    |   \\____   |
 ///  /_______  /\_______  /______  /|______  // ______|
-///          \/         \/       \/        \/ \/       
+///          \/         \/       \/        \/ \/
 **/
 ///
 /// @title:        Dobby
-/// 
+///
 /// @author:       Walker Rout
-/// 
+///
 /// @contact:      walkerrout04@gmail.com
-/// 
+///
 /// @date_written: 2026/10/18
-/// 
+///
 /// @description:  Abstraction for single-threaded double buffering
-/// 
+///
 /// @license:      GPL3
 ///
 
@@ -29,9 +29,9 @@ extern "C" {
 #define _DOBBY_H
 
 #ifndef __STDC_VERSION__
-  #error "use a modern compiler"
+#error "use a modern compiler"
 #elif __STDC_VERSION__ < 201112L
-  #error "dobby need c11"
+#error "dobby need c11"
 #endif
 
 #include <stddef.h>
@@ -52,7 +52,10 @@ struct double_buffer {
   struct double_buffer_inner inner;
 };
 
-void double_buffer_init(struct double_buffer *dbuf, struct double_buffer_config cfg);
+void double_buffer_init(
+  struct double_buffer *dbuf,
+  struct double_buffer_config cfg
+);
 void double_buffer_free(struct double_buffer *dbuf);
 const void *double_buffer_read(struct double_buffer *dbuf);
 void *double_buffer_write(struct double_buffer *dbuf);
@@ -67,15 +70,19 @@ void double_buffer_swap(struct double_buffer *dbuf);
 
 // i fucking hate windows
 #ifdef _WIN32
-  #include <malloc.h>
-  #define _DOBBY_ALIGNED_ALLOC(align, size) _aligned_malloc((size), (align))
-  #define _DOBBY_ALIGNED_FREE(ptr) _aligned_free(ptr)
+#include <malloc.h>
+#define _DOBBY_ALIGNED_ALLOC(align, size) _aligned_malloc((size), (align))
+#define _DOBBY_ALIGNED_FREE(ptr) _aligned_free(ptr)
 #else
-  #define _DOBBY_ALIGNED_ALLOC(align, size) aligned_alloc((align), (size))
-  #define _DOBBY_ALIGNED_FREE(ptr) free(ptr)
+#define _DOBBY_ALIGNED_ALLOC(align, size) aligned_alloc((align), (size))
+#define _DOBBY_ALIGNED_FREE(ptr) free(ptr)
 #endif
 
-static void double_buffer_inner_init(struct double_buffer_inner *inner, uint8_t *head_read, uint8_t *head_write) {
+static void double_buffer_inner_init(
+  struct double_buffer_inner *inner,
+  uint8_t *head_read,
+  uint8_t *head_write
+) {
   assert(inner);
   inner->head_read = head_read;
   inner->head_write = head_write;
@@ -96,28 +103,34 @@ static void double_buffer_inner_swap(struct double_buffer_inner *inner) {
   inner->head_write = temp;
 }
 
-void double_buffer_init(struct double_buffer *dbuf, struct double_buffer_config cfg) {
+void double_buffer_init(
+  struct double_buffer *dbuf,
+  struct double_buffer_config cfg
+) {
   assert(dbuf);
   assert(cfg.elem_size > 0);
   assert(cfg.elem_count > 0);
   assert(cfg.elem_align > 0);
-  assert((cfg.elem_align & (cfg.elem_align-1)) == 0);
+  assert((cfg.elem_align & (cfg.elem_align - 1)) == 0);
 
   // block size for one of the buffers (we need two of these)
   assert(cfg.elem_size <= SIZE_MAX / cfg.elem_count);
   size_t size = cfg.elem_size * cfg.elem_count;
   // round to element alignment
-  assert(size <= SIZE_MAX - (cfg.elem_align-1));
-  size_t stride = (size + cfg.elem_align-1) & ~(cfg.elem_align-1);
+  assert(size <= SIZE_MAX - (cfg.elem_align - 1));
+  size_t stride = (size + cfg.elem_align - 1) & ~(cfg.elem_align - 1);
   // total size of both buffers
-  assert(stride <= SIZE_MAX/2);
-  size_t total = 2*stride;
+  assert(stride <= SIZE_MAX / 2);
+  size_t total = 2 * stride;
   // round to allocation alignment
+  // clang-format off
+  // - guy keeps putting my ternaries on two lines...
   size_t align = cfg.elem_align < _Alignof(max_align_t)
-      ? _Alignof(max_align_t)
-      : cfg.elem_align;
-  assert(total <= SIZE_MAX - (align-1));
-  size_t alloc_size = (total + align-1) & ~(align-1);
+    ? _Alignof(max_align_t)
+    : cfg.elem_align;
+  // clang-format on
+  assert(total <= SIZE_MAX - (align - 1));
+  size_t alloc_size = (total + align - 1) & ~(align - 1);
 
   // we use aligned alloc to avoid storing cfg
   uint8_t *memory = _DOBBY_ALIGNED_ALLOC(align, alloc_size);
@@ -139,7 +152,7 @@ void double_buffer_free(struct double_buffer *dbuf) {
 }
 
 const void *double_buffer_read(struct double_buffer *dbuf) {
-  return double_buffer_inner_read(dbuf->inner); 
+  return double_buffer_inner_read(dbuf->inner);
 }
 
 void *double_buffer_write(struct double_buffer *dbuf) {

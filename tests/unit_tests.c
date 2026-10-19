@@ -1,6 +1,6 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 
 #define DOBBY_IMPLEMENTATION
 #include "../dobby.h"
@@ -8,15 +8,15 @@
 
 // NDEBUG disables assert, this will never be disabled
 #define ALWAYS_ASSERT(expr) \
-  ((expr) ? (void)0 : (fprintf(stderr, "Assertion failed at line %d: %s\n", __LINE__, #expr), exit(1)))
+  ((expr) \
+     ? (void)0 \
+     : (fprintf(stderr, "Assertion failed at line %d: %s\n", __LINE__, #expr), \
+        exit(1)))
 
 void test_double_buffer(void) {
   struct double_buffer dbuf;
-  struct double_buffer_config cfg = {
-    .elem_size = sizeof(int),
-    .elem_align = 64,
-    .elem_count = 10
-  };
+  struct double_buffer_config cfg =
+    {.elem_size = sizeof(int), .elem_align = 64, .elem_count = 10};
 
   double_buffer_init(&dbuf, cfg);
 
@@ -50,11 +50,8 @@ void test_alignment(void) {
 
   for (size_t i = 0; i < sizeof(alignments) / sizeof(alignments[0]); ++i) {
     struct double_buffer dbuf;
-    struct double_buffer_config cfg = {
-      .elem_size = 1,
-      .elem_align = alignments[i],
-      .elem_count = 4097
-    };
+    struct double_buffer_config cfg =
+      {.elem_size = 1, .elem_align = alignments[i], .elem_count = 4097};
 
     double_buffer_init(&dbuf, cfg);
 
