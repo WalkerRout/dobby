@@ -42,6 +42,16 @@ struct double_buffer_inner {
   uint8_t *head_write;
 };
 
+// non owning api
+void double_buffer_inner_init(
+  struct double_buffer_inner *inner,
+  uint8_t *head_read,
+  uint8_t *head_write
+);
+const void *double_buffer_inner_read(struct double_buffer_inner inner);
+void *double_buffer_inner_write(struct double_buffer_inner inner);
+void double_buffer_inner_swap(struct double_buffer_inner *inner);
+
 struct double_buffer_config {
   size_t elem_size;
   size_t elem_align;
@@ -52,6 +62,7 @@ struct double_buffer {
   struct double_buffer_inner inner;
 };
 
+// owning api
 void double_buffer_init(
   struct double_buffer *dbuf,
   struct double_buffer_config cfg
@@ -78,7 +89,7 @@ void double_buffer_swap(struct double_buffer *dbuf);
 #define _DOBBY_ALIGNED_FREE(ptr) free(ptr)
 #endif
 
-static void double_buffer_inner_init(
+void double_buffer_inner_init(
   struct double_buffer_inner *inner,
   uint8_t *head_read,
   uint8_t *head_write
@@ -88,15 +99,15 @@ static void double_buffer_inner_init(
   inner->head_write = head_write;
 }
 
-static const void *double_buffer_inner_read(struct double_buffer_inner inner) {
+const void *double_buffer_inner_read(struct double_buffer_inner inner) {
   return (const void *)inner.head_read;
 }
 
-static void *double_buffer_inner_write(struct double_buffer_inner inner) {
+void *double_buffer_inner_write(struct double_buffer_inner inner) {
   return (void *)inner.head_write;
 }
 
-static void double_buffer_inner_swap(struct double_buffer_inner *inner) {
+void double_buffer_inner_swap(struct double_buffer_inner *inner) {
   assert(inner);
   void *temp = inner->head_read;
   inner->head_read = inner->head_write;
