@@ -7,7 +7,7 @@ OBJS_DIR = .objs
 BIN_DIR = bin
 
 WARNINGS = -Wall -Wextra -Wpedantic -Wmisleading-indentation -Wunused -Wuninitialized -Wshadow -Wconversion -Werror
-CCFLAGS = -O1 -g --std=c11 $(WARNINGS)
+CCFLAGS = -O3 -march=native --std=c11 $(WARNINGS)
 LDFLAGS = 
 
 HDRS = dobby.h
@@ -42,8 +42,8 @@ lint:
 	clang-format --dry-run --Werror $(SRCS) $(HDRS)
 	clang-check --analyze --extra-arg=-Xanalyzer --extra-arg=-analyzer-output=text $(SRCS) -- $(CCFLAGS)
 
-dump: $(BIN_DIR)/$(BIN)
-	llvm-objdump -D $<
+dump: $(OBJS)
+	llvm-objdump -d --no-show-raw-insn $^
 
 clean:
 	rm -rf $(OBJS_DIR)
