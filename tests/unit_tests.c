@@ -58,6 +58,12 @@ void test_alignment(void) {
     ALWAYS_ASSERT((uintptr_t)double_buffer_read(&dbuf) % cfg.elem_align == 0);
     ALWAYS_ASSERT((uintptr_t)double_buffer_write(&dbuf) % cfg.elem_align == 0);
 
+    const size_t size = cfg.elem_size * cfg.elem_count;
+    const size_t stride = (size + cfg.elem_align - 1) & ~(cfg.elem_align - 1);
+    const uint8_t *read = double_buffer_read(&dbuf);
+    const uint8_t *write = double_buffer_write(&dbuf);
+    ALWAYS_ASSERT((size_t)(write - read) == stride);
+
     double_buffer_swap(&dbuf);
     double_buffer_free(&dbuf);
   }

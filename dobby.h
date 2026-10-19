@@ -131,18 +131,17 @@ void double_buffer_init(
   assert(cfg.elem_align > 0);
   assert((cfg.elem_align & (cfg.elem_align - 1)) == 0);
 
-  // round element size to alignment
-  assert(cfg.elem_size <= SIZE_MAX - (cfg.elem_align - 1));
-  const size_t elem_stride =
-    (cfg.elem_size + cfg.elem_align - 1) & ~(cfg.elem_align - 1);
-
   // block size for one of the buffers (we need two of these)
-  assert(elem_stride <= SIZE_MAX / cfg.elem_count);
-  const size_t size = elem_stride * cfg.elem_count;
+  assert(cfg.elem_size <= SIZE_MAX / cfg.elem_count);
+  const size_t size = cfg.elem_size * cfg.elem_count;
+
+  // round element size to alignment
+  assert(size <= SIZE_MAX - (cfg.elem_align - 1));
+  const size_t stride = (size + cfg.elem_align - 1) & ~(cfg.elem_align - 1);
 
   // total size of both buffers
-  assert(size <= SIZE_MAX / 2);
-  const size_t total = 2 * size;
+  assert(stride <= SIZE_MAX / 2);
+  const size_t total = 2 * stride;
 
   // round to allocation alignment
   // clang-format off
@@ -158,7 +157,7 @@ void double_buffer_init(
   uint8_t *memory = _DOBBY_ALIGNED_ALLOC(align, alloc_size);
   assert(memory);
 
-  double_buffer_inner_init(&dbuf->inner, memory, memory + size);
+  double_buffer_inner_init(&dbuf->inner, memory, memory + stride);
 }
 
 void double_buffer_free(const struct double_buffer *dbuf) {
