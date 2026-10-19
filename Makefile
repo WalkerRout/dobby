@@ -2,6 +2,7 @@ CC = clang
 LD = clang
 
 BIN = dobby
+# will rm -rf anything defined for OBJS_DIR and BIN_DIR
 OBJS_DIR = .objs
 BIN_DIR = bin
 
@@ -45,6 +46,8 @@ dump: $(BIN_DIR)/$(BIN)
 	llvm-objdump -D $<
 
 clean:
-	rm -rf $(OBJS_DIR) $(BIN_DIR)
+	rm -rf $(OBJS_DIR)
+	@# glob ignores hidden files (.gitignore)
+	rm -rf $(BIN_DIR)/*
 
 .PHONY: all fmt lint dump clean
