@@ -7,7 +7,7 @@ OBJS_DIR = .objs
 BIN_DIR = bin
 
 WARNINGS = -Wall -Wextra -Wpedantic -Wmisleading-indentation -Wunused -Wuninitialized -Wshadow -Wconversion -Werror
-CCFLAGS = -O3 -march=native --std=c11 $(WARNINGS)
+CCFLAGS = -DNDEBUG -O3 -march=native -std=c11 $(WARNINGS)
 LDFLAGS = 
 
 HDRS = dobby.h
